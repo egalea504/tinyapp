@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/egalea504/tinyapp/issues"
   },
-  "homepage": "https://github.com/egalea504/tinyapp#readme"
+  "homepage": "https://github.com/egalea504/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }

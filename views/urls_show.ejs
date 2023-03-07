@@ -20,6 +20,19 @@
         <p class="card-text">
           Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
         </p>
+        <form class="form-inline" action="/urls/<%= id %>" method="POST">
+          <div class="update URL">
+            <label for="Update URL">Update URL:</label>
+            <input
+              class="form-control"
+              type="text"
+              name="longURL"
+              placeholder="http://"
+              style="width: 300px; margin: 1em;"
+            />
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </td>
       </div>
       <div class="card-footer text-muted"></div>
     </div>

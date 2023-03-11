@@ -59,6 +59,11 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//will render urls_register form created
+app.get("/register", (req, res) => {
+  res.render("urls_register");
+});
+
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   const data = req.body;
@@ -108,6 +113,16 @@ app.post("/logout", (req, res) => {
     urls: urlDatabase
   };
   res.redirect("/urls");
+});
+
+// process to save cookies email and password
+app.post("/register", (req, res) => {
+  console.log(req.body);
+  const email = req.body.email;
+  const password = req.body.password;
+
+  res.cookie("email", email);
+  res.cookie("password", password);
 });
 
 app.listen(PORT, () => {

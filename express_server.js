@@ -1,5 +1,5 @@
 const express = require("express");
-var cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -26,6 +26,10 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -48,14 +52,16 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"] };
+    username: req.cookies["username"]
+  };
   res.render("urls_new", templateVars);
 });
 
 // display the long and short URL on the url ID page
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"] };
+  const templateVars = { username: req.cookies["username"],
+    id: req.params.id, longURL: urlDatabase[req.params.id]
+     };
   res.render("urls_show", templateVars);
 });
 
@@ -71,7 +77,10 @@ app.post("/urls", (req, res) => {
 
   const newKey = generateRandomString();
   urlDatabase[newKey] = data.url;
-  const templateVars = { id: newKey, longURL: data.url };
+  const templateVars = { id: newKey, longURL: data.url,
+    // added username key to template vars so it can render urls_show
+  username: req.cookies["username"]
+};
   res.render("urls_show", templateVars);
 });
 
@@ -115,15 +124,15 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
-// process to save cookies email and password
-app.post("/register", (req, res) => {
-  console.log(req.body);
-  const email = req.body.email;
-  const password = req.body.password;
+// // process to save cookies email and password
+// app.post("/register", (req, res) => {
+//   console.log(req.body);
+//   const email = req.body.email;
+//   const password = req.body.password;
 
-  res.cookie("email", email);
-  res.cookie("password", password);
-});
+//   res.cookie("email", email);
+//   res.cookie("password", password);
+// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

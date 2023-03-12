@@ -51,14 +51,6 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-// app.get("/urls", (req, res) => {
-//   const templateVars = {
-//     username: req.cookies["username"],
-//     urls: urlDatabase
-//   };
-//   res.render("urls_index", templateVars);
-// });
-
 app.get("/login", (req, res) => {
   res.render("urls_login");
 });
@@ -70,7 +62,7 @@ app.get("/register", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = {
-    username: req.cookies["user_id"],
+    user: req.cookies["email"],
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
@@ -78,14 +70,14 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["user_id"]
+    user: req.cookies["email"]
   };
   res.render("urls_new", templateVars);
 });
 
 // display the long and short URL on the url ID page
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { username: req.cookies["user_id"],
+  const templateVars = { user: req.cookies["user_id"],
     id: req.params.id, longURL: urlDatabase[req.params.id]
      };
   res.render("urls_show", templateVars);
@@ -99,8 +91,8 @@ app.post("/urls", (req, res) => {
   const newKey = generateRandomString();
   urlDatabase[newKey] = data.url;
   const templateVars = { id: newKey, longURL: data.url,
-    // added username key to template vars so it can render urls_show
-  username: req.cookies["username"]
+    // added user key to template vars so it can render urls_show
+  user: req.cookies["email"]
 };
   res.render("urls_show", templateVars);
 });
@@ -124,7 +116,9 @@ app.post("/urls/:id", (req, res) => {
   const newURL = req.body.longURL;
 
   urlDatabase[id] = newURL;
-  const templateVars = { id, longURL: newURL };
+  const templateVars = { id, longURL: newURL,
+    user: req.cookies["email"] 
+  };
   res.render("urls_show", templateVars);
   res.redirect("/urls");
 });
@@ -135,20 +129,23 @@ app.post("/login", (req, res) => {
   for (let userID in users) {
     if (users[userID].email === inputtedEmail) {
       if (users[userID].password === inputtedPassword) {
-        res.redirect("/urls", {username: users[userID].email})
+        res.cookie("user_id", users[userID].id);
+        res.cookie("email", users[userID].email);
+        res.redirect("/urls");
       }
     }
+    
   }
-  res.redirect("/urls");
+  res.status(403).send("Error 403. Information doesn't match. Please try again.");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   const templateVars = {
-    username: null,
+    user: null,
     urls: urlDatabase
   };
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 // process to save cookies email and password
@@ -173,9 +170,10 @@ app.post("/register", (req, res) => {
     password: dataUser.password
   };
 
-  res.cookie("username", users[userID].email);
+  res.cookie("user_id", users[userID].id);
+  res.cookie("email", users[userID].email);
   console.log(users);
-    // added username key to template vars so it can render urls_show
+    // added user key to template vars so it can render urls_show
     res.redirect("/urls");
 });
 

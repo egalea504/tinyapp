@@ -144,6 +144,16 @@ app.post("/logout", (req, res) => {
 // process to save cookies email and password
 app.post("/register", (req, res) => {
   console.log(req.body);
+  //checking if email input or password input are empty - if empty send 404 error
+  if (!req.body.email || !req.body.password) {
+    res.status(404).send('404 Not Found');
+  } 
+  // looping through users key - if key.email equals inputted email - send error message
+  for (let userID in users) {
+    if (users[userID].email === req.body.email) {
+      res.status(404).send("It looks like you're already registered!");
+    }};
+
   const dataUser = req.body;
 
   userID = generateRandomString();

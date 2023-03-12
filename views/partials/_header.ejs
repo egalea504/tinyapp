@@ -21,7 +21,14 @@
           <form method="POST" action="/logout">
             <button type="submit">Log Out</button>
           </form>
-<% } %>
+<% } else { %>
+  <form method="POST" action="/register">
+    <button type="submit">Register</button>
+  </form>
+  <form method="POST" action="/login">
+    <button type="submit">Login</button>
+  </form>
+  <% } %>
       </div>
     </div>
   </nav>

@@ -59,6 +59,15 @@ app.get("/hello", (req, res) => {
 //   res.render("urls_index", templateVars);
 // });
 
+app.get("/login", (req, res) => {
+  res.render("urls_login");
+});
+
+//will render urls_register form created
+app.get("/register", (req, res) => {
+  res.render("urls_register");
+});
+
 app.get("/urls", (req, res) => {
   const templateVars = {
     username: req.cookies["user_id"],
@@ -80,11 +89,6 @@ app.get("/urls/:id", (req, res) => {
     id: req.params.id, longURL: urlDatabase[req.params.id]
      };
   res.render("urls_show", templateVars);
-});
-
-//will render urls_register form created
-app.get("/register", (req, res) => {
-  res.render("urls_register");
 });
 
 app.post("/urls", (req, res) => {
@@ -126,9 +130,15 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  const username = req.body.username;
-  res.cookie("username", username );
+  const inputtedEmail = req.body.email;
+  const inputtedPassword = req.body.password;
+  for (let userID in users) {
+    if (users[userID].email === inputtedEmail) {
+      if (users[userID].password === inputtedPassword) {
+        res.redirect("/urls", {username: users[userID].email})
+      }
+    }
+  }
   res.redirect("/urls");
 });
 
@@ -163,7 +173,7 @@ app.post("/register", (req, res) => {
     password: dataUser.password
   };
 
-  res.cookie("user_id", users[userID].email);
+  res.cookie("username", users[userID].email);
   console.log(users);
     // added username key to template vars so it can render urls_show
     res.redirect("/urls");

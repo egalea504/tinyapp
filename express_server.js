@@ -27,7 +27,16 @@ const urlDatabase = {
 };
 
 const users = {
-
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
 };
 
 app.get("/", (req, res) => {
@@ -42,9 +51,17 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+// app.get("/urls", (req, res) => {
+//   const templateVars = {
+//     username: req.cookies["username"],
+//     urls: urlDatabase
+//   };
+//   res.render("urls_index", templateVars);
+// });
+
 app.get("/urls", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"],
+    username: req.cookies["user_id"],
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
@@ -52,14 +69,14 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"]
+    username: req.cookies["user_id"]
   };
   res.render("urls_new", templateVars);
 });
 
 // display the long and short URL on the url ID page
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { username: req.cookies["username"],
+  const templateVars = { username: req.cookies["user_id"],
     id: req.params.id, longURL: urlDatabase[req.params.id]
      };
   res.render("urls_show", templateVars);
@@ -124,15 +141,23 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
-// // process to save cookies email and password
-// app.post("/register", (req, res) => {
-//   console.log(req.body);
-//   const email = req.body.email;
-//   const password = req.body.password;
+// process to save cookies email and password
+app.post("/register", (req, res) => {
+  console.log(req.body);
+  const dataUser = req.body;
 
-//   res.cookie("email", email);
-//   res.cookie("password", password);
-// });
+  userID = generateRandomString();
+  users[userID] = {
+    id: userID,
+    email: dataUser.email,
+    password: dataUser.password
+  };
+
+  res.cookie("user_id", users[userID].email);
+  console.log(users);
+    // added username key to template vars so it can render urls_show
+    res.redirect("/urls");
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

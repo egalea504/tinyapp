@@ -8,6 +8,7 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// function generates random string which will be used to generate random ID for url and user
 function generateRandomString() {
   let characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
   let stringLength = 6;
@@ -141,6 +142,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
+  res.cookie("email");
   const templateVars = {
     user: null,
     urls: urlDatabase

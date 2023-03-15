@@ -22,9 +22,30 @@ function generateRandomString() {
   return randomString;
 }
 
+function urlsForUser(id) {
+  let userURLs = {};
+  for (let key in urlDatabase) {
+    const shortURL = urlDatabase[key];
+    if (shortURL.userID === id) {
+      userURLs[key] = shortURL;
+      }
+    }
+    return userURLs;
+  }
+
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b2xVn2: {
+  longURL: "http://www.lighthouselabs.ca",
+  userID: "userRandomID",
+},
+  ssm5xK: {
+   longURL: "http://www.google.com",
+   userID: "userRandomID",
+  },
+  m2wFq6: {
+    longURL: "https://www.youtube.com",
+    userID: "user2RandomID",
+  },
 };
 
 const users = {
@@ -53,38 +74,66 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.render("urls_login");
+  if (!req.cookies["email"]) {
+    res.render("urls_login");
+  } else {
+  
+  res.redirect("/urls")
+  }
 });
 
 //will render urls_register form created
 app.get("/register", (req, res) => {
-  res.render("urls_register");
+  if (!req.cookies["email"]) {
+    res.render("urls_register");
+    
+  } else {
+    res.redirect("/urls")
+  }
 });
 
 app.get("/urls", (req, res) => {
+  urlsForUser(req.cookies["user_id"])
+  if (!req.cookies["email"]) {
+    res.send("You do not have access to this page. Please log in to view your saved URLs.");
+  }
   const templateVars = {
     user: req.cookies["email"],
-    urls: urlDatabase
+    urls: urlsForUser(req.cookies["user_id"])
   };
+
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
+  if (!req.cookies["email"]) {
+    res.redirect("/login");
+  }
+
   const templateVars = {
     user: req.cookies["email"]
   };
   res.render("urls_new", templateVars);
+
 });
 
 // display the long and short URL on the url ID page
 app.get("/urls/:id", (req, res) => {
+  if (!req.cookies["email"]) {
+    res.send("You do not have access to this page. Please log in to view your saved URLs.");
+  }
+
   const templateVars = { user: req.cookies["user_id"],
-    id: req.params.id, longURL: urlDatabase[req.params.id]
+    id: urlDatabase[req.params.id], longURL: urlDatabase[req.params.id].longURL
      };
   res.render("urls_show", templateVars);
 });
 
 app.post("/urls", (req, res) => {
+  if (!req.cookies["email"]) {
+    res.send("Login required to shorten URLs.")
+  }
+
   console.log(req.body); // Log the POST request body to the console
   const data = req.body;
   data.url = data.longURL;
@@ -99,17 +148,29 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  if (!urlDatabase[req.params.id].longURL) {
+    res.send("URL does not exist.");
+  }
+  const longURL = urlDatabase[req.params.id].longURL;
   res.redirect(longURL);
+
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+  if (!req.cookies["email"]) {
+    res.send("You do not own this content. Please log in to view your URLs.")
+  }
+
   const id = req.params.id;
   delete urlDatabase[id];
   res.redirect("/urls");
 });
 
 app.post("/urls/:id", (req, res) => {
+  if (!req.cookies["email"]) {
+    res.send("You do not own this content. Please log in to view your URLs.")
+  }
+
   console.log(req.body); // Log the POST request body to the console
 
   const id = req.params.id;
@@ -142,7 +203,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.cookie("email");
+  res.clearCookie("email");
   const templateVars = {
     user: null,
     urls: urlDatabase

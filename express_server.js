@@ -29,6 +29,7 @@ function generateRandomString() {
   return randomString;
 }
 
+// function used to return all URLs linked to unique user
 function urlsForUser(id) {
   let userURLs = {};
   for (let key in urlDatabase) {
@@ -40,17 +41,7 @@ function urlsForUser(id) {
     return userURLs;
   }
 
-  const getUserByEmail = function(email, database) {
-    let user = "";
-    for (let key in database) {
-      let lookUpEmail = database[key].email;
-      if (lookUpEmail === email) {
-        user = database[key];
-      }
-    }
-    return user;
-  };
-
+// url database contains short and long urls for each user
 const urlDatabase = {
   b2xVn2: {
   longURL: "http://www.lighthouselabs.ca",
@@ -79,18 +70,7 @@ const users = {
   },
 };
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
+// login page - if not connect, render login page or if connected redirect to urls page
 app.get("/login", (req, res) => {
   if (!req.session.email) {
     res.render("urls_login");
@@ -100,7 +80,7 @@ app.get("/login", (req, res) => {
   }
 });
 
-//will render urls_register form created
+// render register form if not signed in
 app.get("/register", (req, res) => {
   if (!req.session.email) {
     res.render("urls_register");
@@ -110,6 +90,7 @@ app.get("/register", (req, res) => {
   }
 });
 
+// render urls page if signed in, error message if not
 app.get("/urls", (req, res) => {
   if (!req.session.email) {
     res.send("You do not have access to this page. Please log in to view your saved URLs.");
@@ -122,6 +103,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// render new url page if signed in, error message if not
 app.get("/urls/new", (req, res) => {
   if (!req.session.email) {
     res.redirect("/login");
@@ -130,8 +112,8 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: req.session.email
   };
-  res.render("urls_new", templateVars);
 
+  res.render("urls_new", templateVars);
 });
 
 // display the long and short URL on the url ID page
@@ -143,9 +125,11 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = { user: req.session.email,
     id: req.params.id, longURL: urlDatabase[req.params.id].longURL
      };
+
   res.render("urls_show", templateVars);
 });
 
+// post to urls if signed in, else error message
 app.post("/urls", (req, res) => {
   if (!req.session.email) {
     res.send("Login required to shorten URLs.")
@@ -159,20 +143,22 @@ app.post("/urls", (req, res) => {
     // added user key to template vars so it can render urls_show
   user: req.session.email
 };
+
   res.render("urls_show", templateVars);
 });
 
+// redirect to longURL if it exists in database
 app.get("/u/:id", (req, res) => {
-  // if (!urlDatabase[req.params.id].longURL) {
-  //   res.send("URL does not exist.");
-  // }
+  if (!urlDatabase[req.params.id].longURL) {
+    res.send("URL does not exist.");
+  }
   
-  console.log(req.params.id);
   const longURL = urlDatabase[req.params.id].longURL;
-  res.redirect(longURL);
 
+  res.redirect(longURL);
 });
 
+// delete short url from urls, error message if not signed in
 app.post("/urls/:id/delete", (req, res) => {
   if (!req.session.email) {
     res.send("You do not own this content. Please log in to view your URLs.")
@@ -180,9 +166,11 @@ app.post("/urls/:id/delete", (req, res) => {
 
   const id = req.params.id;
   delete urlDatabase[id];
+
   res.redirect("/urls");
 });
 
+// post to urls id if signed in, else error message
 app.post("/urls/:id", (req, res) => {
   if (!req.session.email) {
     res.send("You do not own this content. Please log in to view your URLs.")
@@ -193,17 +181,21 @@ app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
 
   urlDatabase[id].longURL = req.body.longURL;
+
   res.redirect("/urls");
 });
 
+// login form
 app.post("/login", (req, res) => {
   const inputtedEmail = req.body.email;
   const inputtedPassword = req.body.password;
+  // check if email and password match, else error message
   for (let userID in users) {
     if (users[userID].email === inputtedEmail) {
       if (bcrypt.compareSync(inputtedPassword, users[userID].password)) {
         req.session.user_id = users[userID].id;
         req.session.email = users[userID].email;
+
         res.redirect("/urls");
       }
     }
@@ -212,6 +204,7 @@ app.post("/login", (req, res) => {
   res.status(403).send("Error 403. Information doesn't match. Please try again.");
 });
 
+// logout button clears session
 app.post("/logout", (req, res) => {
   req.session.user_id = null;
   req.session.email = null;
@@ -219,7 +212,7 @@ app.post("/logout", (req, res) => {
   res.redirect("/login");
 });
 
-// process to save cookies email and password
+// process to register email and password cookies
 app.post("/register", (req, res) => {
   console.log(req.body);
   //checking if email input or password input are empty - if empty send 404 error
@@ -244,7 +237,7 @@ app.post("/register", (req, res) => {
 
   req.session.user_id = users[userID].id;
   req.session.email = users[userID].email;
-  console.log(users);
+
     // added user key to template vars so it can render urls_show
     res.redirect("/urls");
 });

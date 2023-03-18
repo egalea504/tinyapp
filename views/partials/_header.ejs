@@ -12,7 +12,7 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="justify-content:flex-end">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
@@ -22,11 +22,11 @@
             <button type="submit">Log Out</button>
           </form>
 <% } else { %>
-  <form method="GET" action="/register">
-    <button type="submit">Register</button>
+  <form method="GET" action="/register" style="margin:auto;padding-right:10px;text-align:center;">
+    <button type="submit" style="background-color:#B5CDA5;">Register</button>
   </form>
-  <form method="GET" action="/login">
-    <button type="submit">Login</button>
+  <form method="GET" action="/login" style="margin:auto;padding-left:10px;text-align:center;">
+    <button type="submit" style="background-color:#B5CDA5;">Login</button>
   </form>
   <% } %>
       </div>

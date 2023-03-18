@@ -15,31 +15,8 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
 
-// function generates random string which will be used to generate random ID for url and user
-function generateRandomString() {
-  let characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-  let stringLength = 6;
-
-  let randomString = "";
-
-  for (let i = 0; i < stringLength; i++) {
-    let randomNumber = Math.floor(Math.random() * characters.length);
-    randomString += characters[randomNumber];
-  }
-  return randomString;
-}
-
-// function used to return all URLs linked to unique user
-function urlsForUser(id) {
-  let userURLs = {};
-  for (let key in urlDatabase) {
-    const shortURL = urlDatabase[key];
-    if (shortURL.userID === id) {
-      userURLs[key] = shortURL;
-      }
-    }
-    return userURLs;
-  }
+const { generateRandomString,
+  urlsForUser, getUserByEmail } = require("./helpers.js");
 
 // url database contains short and long urls for each user
 const urlDatabase = {
@@ -73,7 +50,10 @@ const users = {
 // login page - if not connect, render login page or if connected redirect to urls page
 app.get("/login", (req, res) => {
   if (!req.session.email) {
-    res.render("urls_login");
+    const templateVars = {
+      user: req.session.email
+    }
+    res.render("urls_login", templateVars);
   } else {
   
   res.redirect("/urls")
@@ -83,7 +63,10 @@ app.get("/login", (req, res) => {
 // render register form if not signed in
 app.get("/register", (req, res) => {
   if (!req.session.email) {
-    res.render("urls_register");
+    const templateVars = {
+      user: req.session.email
+    }
+    res.render("urls_register", templateVars);
     
   } else {
     res.redirect("/urls")
@@ -93,11 +76,11 @@ app.get("/register", (req, res) => {
 // render urls page if signed in, error message if not
 app.get("/urls", (req, res) => {
   if (!req.session.email) {
-    res.send("You do not have access to this page. Please log in to view your saved URLs.");
+    res.redirect("/login");
   }
   const templateVars = {
     user: req.session.email,
-    urls: urlsForUser(req.session.user_id)
+    urls: urlsForUser(req.session.user_id, urlDatabase)
   };
 
   res.render("urls_index", templateVars);
@@ -118,8 +101,15 @@ app.get("/urls/new", (req, res) => {
 
 // display the long and short URL on the url ID page
 app.get("/urls/:id", (req, res) => {
-  if (!req.session.email) {
-    res.send("You do not have access to this page. Please log in to view your saved URLs.");
+
+  const url = urlDatabase[req.params.id];
+  
+  if (!req.session.user_id) {
+    return res.send("You do not have access to this page. Please log in to view your saved URLs.");
+  }
+  
+  if (url.userID !== req.session.user_id) {
+    return res.send("You do not have access to this page.");
   }
 
   const templateVars = { user: req.session.email,
@@ -132,7 +122,7 @@ app.get("/urls/:id", (req, res) => {
 // post to urls if signed in, else error message
 app.post("/urls", (req, res) => {
   if (!req.session.email) {
-    res.send("Login required to shorten URLs.")
+    return res.send("Login required to shorten URLs.")
   }
 
   console.log(req.body); // Log the POST request body to the console
@@ -150,7 +140,7 @@ app.post("/urls", (req, res) => {
 // redirect to longURL if it exists in database
 app.get("/u/:id", (req, res) => {
   if (!urlDatabase[req.params.id].longURL) {
-    res.send("URL does not exist.");
+    return res.send("URL does not exist.");
   }
   
   const longURL = urlDatabase[req.params.id].longURL;
@@ -160,20 +150,36 @@ app.get("/u/:id", (req, res) => {
 
 // delete short url from urls, error message if not signed in
 app.post("/urls/:id/delete", (req, res) => {
-  if (!req.session.email) {
-    res.send("You do not own this content. Please log in to view your URLs.")
+
+  const url = urlDatabase[req.params.id];
+  
+  if (!req.session.user_id) {
+    return res.send("You do not have access to this page. Please log in to view your saved URLs.");
+  }
+
+  const user = getUserByEmail(req.session.email, users);
+  
+  if (url.userID !== user.id) {
+    return res.send("You do not have access to this page.");
   }
 
   const id = req.params.id;
   delete urlDatabase[id];
+
 
   res.redirect("/urls");
 });
 
 // post to urls id if signed in, else error message
 app.post("/urls/:id", (req, res) => {
-  if (!req.session.email) {
-    res.send("You do not own this content. Please log in to view your URLs.")
+  const url = urlDatabase[req.params.id];
+  
+  if (!req.session.user_id) {
+    return res.send("You do not have access to this page. Please log in to view your saved URLs.");
+  }
+  
+  if (url.userID !== req.session.user_id) {
+    return res.send("You do not have access to this page.");
   }
 
   console.log(req.body); // Log the POST request body to the console
@@ -182,6 +188,7 @@ app.post("/urls/:id", (req, res) => {
 
   urlDatabase[id].longURL = req.body.longURL;
 
+  console.log(urlDatabase);
   res.redirect("/urls");
 });
 
@@ -190,45 +197,46 @@ app.post("/login", (req, res) => {
   const inputtedEmail = req.body.email;
   const inputtedPassword = req.body.password;
   // check if email and password match, else error message
-  for (let userID in users) {
-    if (users[userID].email === inputtedEmail) {
-      if (bcrypt.compareSync(inputtedPassword, users[userID].password)) {
-        req.session.user_id = users[userID].id;
-        req.session.email = users[userID].email;
-
-        res.redirect("/urls");
-      }
-    }
+  const user = getUserByEmail(inputtedEmail, users);
+  
+  if (user && bcrypt.compareSync(inputtedPassword, user.password)) {
+    req.session.user_id = user.id;
+    req.session.email = user.email;
     
+    res.redirect("/urls");
   }
-  res.status(403).send("Error 403. Information doesn't match. Please try again.");
+
+  res.status(403).send("Information doesn't match. Please try again.");
 });
 
 // logout button clears session
 app.post("/logout", (req, res) => {
-  req.session.user_id = null;
-  req.session.email = null;
+  if (req.session) {
+    req.session = null;
+  }
 
-  res.redirect("/login");
+    res.redirect('/login');
 });
 
 // process to register email and password cookies
 app.post("/register", (req, res) => {
-  console.log(req.body);
+  const inputtedEmail = req.body.email;
+  const inputtedPassword = req.body.password;
+
+  const user = getUserByEmail(inputtedEmail, users);
   //checking if email input or password input are empty - if empty send 404 error
-  if (!req.body.email || !req.body.password) {
-    res.status(404).send('404 Not Found');
+  if (!inputtedEmail || !inputtedPassword) {
+    return res.status(404).send('Error empty field. Please make sure to fill email and password fields and submit again.');
   } 
   // looping through users key - if key.email equals inputted email - send error message
-  for (let userID in users) {
-    if (users[userID].email === req.body.email) {
-      res.status(404).send("It looks like you're already registered!");
-    }};
+  if (user) {
+      return res.status(404).send("It looks like you're already registered!");
+    };
 
   const dataUser = req.body;
   let password = dataUser.password
 
-  userID = generateRandomString();
+  let userID = generateRandomString();
   users[userID] = {
     id: userID,
     email: dataUser.email,
@@ -237,7 +245,7 @@ app.post("/register", (req, res) => {
 
   req.session.user_id = users[userID].id;
   req.session.email = users[userID].email;
-
+  console.log(users);
     // added user key to template vars so it can render urls_show
     res.redirect("/urls");
 });

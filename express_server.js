@@ -156,10 +156,8 @@ app.post("/urls/:id/delete", (req, res) => {
   if (!req.session.user_id) {
     return res.send("You do not have access to this page. Please log in to view your saved URLs.");
   }
-
-  const user = getUserByEmail(req.session.email, users);
   
-  if (url.userID !== user.id) {
+  if (url.userID !== req.session.user_id) {
     return res.send("You do not have access to this page.");
   }
 

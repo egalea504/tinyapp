@@ -4,9 +4,10 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["screenshot of user registration page"](https://github.com/egalea504/tinyapp/blob/9a2505eacf914cef7db27df5fa575f6013e02742/docs/tiny%20app_register%20page.png)
-!["screenshot of saved URLs page"](https://github.com/egalea504/tinyapp/blob/9a2505eacf914cef7db27df5fa575f6013e02742/docs/tiny%20app_all%20urls%20page.png)
-!["screenshot of new URL shortening"](https://github.com/egalea504/tinyapp/blob/9a2505eacf914cef7db27df5fa575f6013e02742/docs/tiny%20app_shorten%20URL.png)
+!["screenshot of user login page"](https://github.com/egalea504/tinyapp/blob/b5cf3f395fa1efce490fa6e639c8dfd78db0fd64/docs/tiny%20app_login%20updated.png)
+!["screenshot of user registration page"](https://github.com/egalea504/tinyapp/blob/b5cf3f395fa1efce490fa6e639c8dfd78db0fd64/docs/tiny%20app_register%20updated.png)
+!["screenshot of saved URLs page"](https://github.com/egalea504/tinyapp/blob/b5cf3f395fa1efce490fa6e639c8dfd78db0fd64/docs/tiny%20app_urls%20page%20updated.png)
+!["screenshot of new URL shortening"](https://github.com/egalea504/tinyapp/blob/b5cf3f395fa1efce490fa6e639c8dfd78db0fd64/docs/tiny%20app_shorten%20url%20updated.png)
 
 ## Dependencies
 

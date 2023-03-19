@@ -17,16 +17,16 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         <% if(user) { %>
-          <%= "Logged In As " + user + "!" %>
-          <form method="POST" action="/logout">
-            <button type="submit">Log Out</button>
+          <h1 class="nav-item" style="text-align: center;color:white;font-size:large;margin:auto;padding-left:10px;padding-right:10px;"><%= "Logged In As " + user + "!" %></h1>
+          <form method="POST" action="/logout" style="margin:auto;padding-right:10px;text-align:center;">
+            <button type="submit" style="background-color:white;border-radius:8px;">Log Out</button>
           </form>
 <% } else { %>
   <form method="GET" action="/register" style="margin:auto;padding-right:10px;text-align:center;">
-    <button type="submit" style="background-color:#B5CDA5;">Register</button>
+    <button type="submit" style="background-color:white;border-radius:8px;">Register</button>
   </form>
   <form method="GET" action="/login" style="margin:auto;padding-left:10px;text-align:center;">
-    <button type="submit" style="background-color:#B5CDA5;">Login</button>
+    <button type="submit" style="background-color:white;border-radius:8px;">Login</button>
   </form>
   <% } %>
       </div>

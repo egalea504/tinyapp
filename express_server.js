@@ -18,34 +18,8 @@ app.use(cookieSession({
 const { generateRandomString,
   urlsForUser, getUserByEmail } = require("./helpers.js");
 
-// url database contains short and long urls for each user
-const urlDatabase = {
-  b2xVn2: {
-  longURL: "http://www.lighthouselabs.ca",
-  userID: "userRandomID",
-},
-  ssm5xK: {
-   longURL: "http://www.google.com",
-   userID: "userRandomID",
-  },
-  m2wFq6: {
-    longURL: "https://www.youtube.com",
-    userID: "user2RandomID",
-  },
-};
-
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-};
+const { urlDatabase,
+  users } = require("./database.js");
 
 // login page - if not connect, render login page or if connected redirect to urls page
 app.get("/login", (req, res) => {
@@ -125,8 +99,6 @@ app.post("/urls", (req, res) => {
     return res.send("Login required to shorten URLs.")
   }
 
-  console.log(req.body); // Log the POST request body to the console
-
   const newKey = generateRandomString();
   urlDatabase[newKey] = {longURL: req.body.longURL, userID: req.session.user_id}
   const templateVars = { id: newKey, longURL: req.body.longURL,
@@ -180,13 +152,10 @@ app.post("/urls/:id", (req, res) => {
     return res.send("You do not have access to this page.");
   }
 
-  console.log(req.body); // Log the POST request body to the console
-
   const id = req.params.id;
 
   urlDatabase[id].longURL = req.body.longURL;
 
-  console.log(urlDatabase);
   res.redirect("/urls");
 });
 
@@ -243,7 +212,6 @@ app.post("/register", (req, res) => {
 
   req.session.user_id = users[userID].id;
   req.session.email = users[userID].email;
-  console.log(users);
     // added user key to template vars so it can render urls_show
     res.redirect("/urls");
 });

@@ -13,7 +13,7 @@ app.use(cookieSession({
 
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
+}));
 
 const { generateRandomString,
   urlsForUser, getUserByEmail } = require("./helpers.js");
@@ -26,11 +26,11 @@ app.get("/login", (req, res) => {
   if (!req.session.email) {
     const templateVars = {
       user: req.session.email
-    }
+    };
     res.render("urls_login", templateVars);
   } else {
   
-  res.redirect("/urls")
+    res.redirect("/urls");
   }
 });
 
@@ -39,18 +39,26 @@ app.get("/register", (req, res) => {
   if (!req.session.email) {
     const templateVars = {
       user: req.session.email
-    }
+    };
     res.render("urls_register", templateVars);
     
   } else {
-    res.redirect("/urls")
+    res.redirect("/urls");
   }
+});
+
+app.get("/", (req, res) => {
+  if (!req.session.email) {
+    res.redirect("/login");
+  }
+
+  res.redirect("/urls");
 });
 
 // render urls page if signed in, error message if not
 app.get("/urls", (req, res) => {
   if (!req.session.email) {
-    res.redirect("/login");
+    return res.send("You do not have access to this page. Please log in to view your saved URLs.");
   }
   const templateVars = {
     user: req.session.email,
@@ -88,7 +96,7 @@ app.get("/urls/:id", (req, res) => {
 
   const templateVars = { user: req.session.email,
     id: req.params.id, longURL: urlDatabase[req.params.id].longURL
-     };
+  };
 
   res.render("urls_show", templateVars);
 });
@@ -96,15 +104,15 @@ app.get("/urls/:id", (req, res) => {
 // post to urls if signed in, else error message
 app.post("/urls", (req, res) => {
   if (!req.session.email) {
-    return res.send("Login required to shorten URLs.")
+    return res.send("Login required to shorten URLs.");
   }
 
   const newKey = generateRandomString();
-  urlDatabase[newKey] = {longURL: req.body.longURL, userID: req.session.user_id}
+  urlDatabase[newKey] = {longURL: req.body.longURL, userID: req.session.user_id};
   const templateVars = { id: newKey, longURL: req.body.longURL,
     // added user key to template vars so it can render urls_show
-  user: req.session.email
-};
+    user: req.session.email
+  };
 
   res.render("urls_show", templateVars);
 });
@@ -182,7 +190,7 @@ app.post("/logout", (req, res) => {
     req.session = null;
   }
 
-    res.redirect('/login');
+  res.redirect('/login');
 });
 
 // process to register email and password cookies
@@ -194,14 +202,14 @@ app.post("/register", (req, res) => {
   //checking if email input or password input are empty - if empty send 404 error
   if (!inputtedEmail || !inputtedPassword) {
     return res.status(404).send('Error empty field. Please make sure to fill email and password fields and submit again.');
-  } 
+  }
   // looping through users key - if key.email equals inputted email - send error message
   if (user) {
-      return res.status(404).send("It looks like you're already registered!");
-    };
+    return res.status(404).send("It looks like you're already registered!");
+  }
 
   const dataUser = req.body;
-  let password = dataUser.password
+  let password = dataUser.password;
 
   let userID = generateRandomString();
   users[userID] = {
@@ -212,8 +220,8 @@ app.post("/register", (req, res) => {
 
   req.session.user_id = users[userID].id;
   req.session.email = users[userID].email;
-    // added user key to template vars so it can render urls_show
-    res.redirect("/urls");
+  // added user key to template vars so it can render urls_show
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
